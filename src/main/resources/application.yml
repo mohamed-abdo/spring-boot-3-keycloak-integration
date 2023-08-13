@@ -1,0 +1,31 @@
+server:
+  port: 8082
+logging:
+  level:
+    org:
+      springframework:
+        security=DEBUG:
+spring:
+  security:
+    oauth2:
+      keycloak:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/system
+      client:
+        registration:
+          keycloak:
+            client-id: sample-client-id
+            client-secret: 3WbnIvmXO3GElbLZYZGq2K2FUcOqWlUp
+            client-authentication-method: client_secret_jwt
+            authorization-grant-type: client_credentials
+            redirect-uri: http://localhost:8082/login/oauth2/code/callback
+            scope: openid, profile, email
+            issuer-uri: http://localhost:8080/realms/external
+            token-uri: http://localhost:8080/realms/system/protocol/openid-connect/token
+            provider: keycloak
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/system
+            authorization-uri: http://localhost:8080/realms/system/protocol/openid-connect/auth
+            token-uri: http://localhost:8080/realms/system/protocol/openid-connect/token
+
