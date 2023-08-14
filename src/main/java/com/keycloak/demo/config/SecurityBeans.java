@@ -5,6 +5,7 @@ import com.keycloak.demo.filter.CustomAuthenticationSuccessHandler;
 import com.keycloak.demo.custom.CustomReactiveAuthenticationManager;
 import com.keycloak.demo.custom.CustomServerAuthorizationRequestRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,8 +55,14 @@ import java.util.function.Function;
 public class SecurityBeans {
     @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
     private String clientId;
-    @Value("${spring.security.oauth2.client.registration.keycloak.client-secret}")
-    private String clientSecret;
+
+    @Autowired
+    ClientRegistration keycloakClientRegistration;
+
+    @Bean
+    public ReactiveClientRegistrationRepository clientRegistrationRepository() {
+        return new InMemoryReactiveClientRegistrationRepository(this.keycloakClientRegistration);
+    }
 
     @Bean
     public ServerAuthorizationRequestRepository serverAuthorizationRequestRepository() {
@@ -65,29 +72,6 @@ public class SecurityBeans {
     @Bean
     public ServerOAuth2AuthorizedClientRepository authorizedClientRepository() {
         return new WebSessionServerOAuth2AuthorizedClientRepository();
-    }
-
-    @Bean
-    public ReactiveClientRegistrationRepository clientRegistrationRepository() {
-        return new InMemoryReactiveClientRegistrationRepository(keycloakClientRegistration());
-    }
-
-    public ClientRegistration keycloakClientRegistration() {
-        return ClientRegistration
-                .withRegistrationId("keycloak")
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_JWT)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("http://localhost:8082/login/oauth2/code/callback")
-                .scope("openid", "profile", "email")
-                .authorizationUri("http://localhost:8080/realms/system/protocol/openid-connect/auth")
-                .tokenUri("http://localhost:8080/realms/system/protocol/openid-connect/token")
-                .userInfoUri("http://localhost:8080/realms/system/protocol/openid-connect/userinfo")
-                .jwkSetUri("http://localhost:8080/realms/system/protocol/openid-connect/certs")
-                .userNameAttributeName(IdTokenClaimNames.SUB)
-                .clientName("Keycloak")
-                .build();
     }
 
     @Bean
@@ -104,7 +88,7 @@ public class SecurityBeans {
             // Create an Authentication object (JwtAuthenticationToken)
             var token = extractTokenFromRequest(exchange);
             if (Objects.isNull(token)) {
-                Collection<GrantedAuthority> anonymousAuthorities = AuthorityUtils.createAuthorityList("ANONYMOUS_USER");
+                Collection<GrantedAuthority> anonymousAuthorities = AuthorityUtils.createAuthorityList("anonymous_user");
                 return customReactiveAuthenticationManager.authenticate(new AnonymousAuthenticationToken("anonymous-user", new Object(), anonymousAuthorities));
             }
             var jwt = validateAndParseToken(token);
@@ -205,12 +189,9 @@ public class SecurityBeans {
         try {
             // Create a JwtDecoder
             JwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation("http://localhost:8080/realms/system");
-
             // Decode the token
             Jwt jwt = jwtDecoder.decode(token);
-
             // Perform additional validation if needed
-
             return jwt;
         } catch (JwtException e) {
             throw new IllegalArgumentException("Invalid token", e);
@@ -223,14 +204,6 @@ public class SecurityBeans {
             return authorizationHeader.substring(7); // Remove "Bearer " prefix
         }
         return null;
-    }
-
-    private String extractClientIdFromJwt(Jwt jwt) {
-        // Extract client ID from JWT claims based on your JWT structure
-        // Return null if client ID is not found or invalid
-        // Replace this with your actual JWT claims extraction logic
-        // Example assumes "client_id" is a custom claim
-        return jwt.getClaimAsString("client_id");
     }
 
     private Collection<? extends GrantedAuthority> extractAuthoritiesFromClaims(Map<String, Object> claims) {
@@ -282,30 +255,10 @@ public class SecurityBeans {
     public OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> accessTokenResponseClient() {
         DefaultAuthorizationCodeTokenResponseClient accessTokenResponseClient =
                 new DefaultAuthorizationCodeTokenResponseClient();
-
         return authorizationGrantRequest -> {
             OAuth2AccessTokenResponse tokenResponse = accessTokenResponseClient.getTokenResponse(authorizationGrantRequest);
-
             // Do any necessary customization with the token response here
-
             return tokenResponse;
         };
     }
-//    @Bean
-//    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
-//            ReactiveClientRegistrationRepository clientRegistrationRepository,
-//            ReactiveOAuth2AuthorizedClientService authorizedClientService) {
-//
-//        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider =
-//                ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
-//                        .clientCredentials()
-//                        .build();
-//
-//        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager =
-//                new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
-//                        clientRegistrationRepository, authorizedClientService);
-//        authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
-//
-//        return authorizedClientManager;
-//    }
 }

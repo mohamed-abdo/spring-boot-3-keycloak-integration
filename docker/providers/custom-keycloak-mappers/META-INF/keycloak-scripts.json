@@ -1,0 +1,11 @@
+{
+  "authenticators": [],
+  "policies": [],
+  "mappers": [ 
+    {
+      "name": "oidc-role-features-mapper",
+      "fileName": "oidc-role-features-mapper.js",
+      "description": "features-roles mapper from a JS file"
+    }
+  ]
+}

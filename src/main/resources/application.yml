@@ -14,14 +14,18 @@ spring:
       client:
         registration:
           keycloak:
-            client-id: sample-client-id
-            client-secret: 3WbnIvmXO3GElbLZYZGq2K2FUcOqWlUp
+            client-id: service-client
+            client-secret: Sm8TiKr6XSL2yaEaxRITjwbyLs8yl4lf
             client-authentication-method: client_secret_jwt
             authorization-grant-type: client_credentials
-            redirect-uri: http://localhost:8082/login/oauth2/code/callback
             scope: openid, profile, email
             issuer-uri: http://localhost:8080/realms/external
+            issuer-realm: http://localhost:8080/realms/system
             token-uri: http://localhost:8080/realms/system/protocol/openid-connect/token
+            jwk-set-uri: http://localhost:8080/realms/system/protocol/openid-connect/certs
+            user-info-uri: http://localhost:8080/realms/system/protocol/openid-connect/userinfo
+            authorization-uri: http://localhost:8080/realms/system/protocol/openid-connect/auth
+            redirect-uri: http://localhost:8082/login/oauth2/code/callback
             provider: keycloak
         provider:
           keycloak:
