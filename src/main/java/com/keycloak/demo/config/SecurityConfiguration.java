@@ -1,8 +1,8 @@
 package com.keycloak.demo.config;
 
-import com.keycloak.demo.filter.CustomAuthenticationFailureHandler;
 import com.keycloak.demo.custom.CustomClientRegistrationRepository;
 import com.keycloak.demo.custom.CustomReactiveAuthenticationManager;
+import com.keycloak.demo.filter.CustomAuthenticationFailureHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
