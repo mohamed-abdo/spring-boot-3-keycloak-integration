@@ -24,7 +24,7 @@ import org.springframework.web.reactive.config.EnableWebFlux;
 @EnableWebFlux
 @EnableWebFluxSecurity
 @EnableReactiveMethodSecurity
-public class SecurityConfiguration {
+public class SecurityConfiguration implements WebFluxConfigurer {
 
     @Autowired
     ServerAuthenticationConverter authenticationConverter;
@@ -60,6 +60,12 @@ public class SecurityConfiguration {
                 .addFilterAt(this.authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
                 .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(failureHandler));
         return http.build();
+    }
+    
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/**")
+                .addResourceLocations("classpath:/static/");
     }
 
 
