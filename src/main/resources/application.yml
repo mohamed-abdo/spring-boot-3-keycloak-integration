@@ -11,6 +11,8 @@ spring:
       keycloak:
         jwt:
           issuer-uri: http://localhost:8080/realms/system
+  cors:
+    allowed-origins: http://localhost:3000
       client:
         registration:
           keycloak:
