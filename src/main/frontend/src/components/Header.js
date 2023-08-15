@@ -1,16 +1,19 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import axios from 'axios';
+import axios from 'axios';
 
 const Header = () => {
   const history = useHistory();
 
-  const handleLogout = () => {
-    // Clear user's authentication status
-    // This is a placeholder and should be replaced with actual logic
-    localStorage.removeItem('user');
-
-    // Redirect to login screen
-    history.push('/login');
+  const handleLogout = async () => {
+    try {
+      await axios.post('/logout');
+      localStorage.removeItem('user');
+      history.push('/login');
+    } catch (error) {
+      console.error('Error during logout', error);
+    }
   };
 
   return (
