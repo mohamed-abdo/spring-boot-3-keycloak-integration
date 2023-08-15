@@ -30,12 +30,13 @@ public class OAuth2ClientController {
     }
 
     @GetMapping("/context")
-    public Mono<?> index() {
+    public Mono<Boolean> index() {
         var clientId = this.clientRegistrationRepository.findByRegistrationId("keycloak")
                 .map(ClientRegistration::getClientId);
         log.info("clientId :: {}", clientId);
         return ReactiveSecurityContextHolder.getContext()
-                .map(SecurityContext::getAuthentication);
+                .map(SecurityContext::getAuthentication)
+                .map(Authentication::isAuthenticated);
     }
 
 }
