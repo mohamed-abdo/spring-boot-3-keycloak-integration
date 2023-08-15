@@ -53,6 +53,9 @@ public class SecurityBeans {
     @Value("${spring.security.oauth2.client.registration.keycloak.client-id}")
     private String clientId;
 
+    @Value("${spring.security.oauth2.client.registration.keycloak.issuer-realm}")
+    private String issuerRealm;
+
     @Autowired
     ClientRegistration keycloakClientRegistration;
 
@@ -179,13 +182,13 @@ public class SecurityBeans {
 
     @Bean
     public ReactiveJwtDecoder jwtDecoder() {
-        return ReactiveJwtDecoders.fromIssuerLocation("http://localhost:8080/realms/system");
+        return ReactiveJwtDecoders.fromIssuerLocation(issuerRealm);
     }
 
     private Jwt validateAndParseToken(String token) {
         try {
             // Create a JwtDecoder
-            JwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation("http://localhost:8080/realms/system");
+            JwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issuerRealm);
             // Decode the token
             Jwt jwt = jwtDecoder.decode(token);
             // Perform additional validation if needed
