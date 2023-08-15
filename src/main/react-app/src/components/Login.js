@@ -4,6 +4,7 @@ import axios from 'axios';
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginStatus, setLoginStatus] = useState('');
 
   useEffect(() => {
     const login = async () => {
@@ -11,7 +12,12 @@ function Login() {
         username,
         password
       });
-      // handle response
+      console.log(response);
+      if (response.status === 200) {
+        setLoginStatus('Login successful');
+      } else {
+        setLoginStatus('Login failed');
+      }
     };
 
     login();
