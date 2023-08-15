@@ -64,83 +64,23 @@ public class SecurityBeans {
         return new InMemoryReactiveClientRegistrationRepository(this.keycloakClientRegistration);
     }
 
-    @Bean
-    public ServerAuthorizationRequestRepository serverAuthorizationRequestRepository() {
-        return new CustomServerAuthorizationRequestRepository();
-    }
+    
 
-    @Bean
-    public ServerOAuth2AuthorizedClientRepository authorizedClientRepository() {
-        return new WebSessionServerOAuth2AuthorizedClientRepository();
-    }
+    
 
-    @Bean
-    public AuthenticationWebFilter authenticationFilter(CustomReactiveAuthenticationManager customAuthenticationManager, CustomAuthenticationFailureHandler customAuthenticationFailureHandler) {
-        AuthenticationWebFilter authenticationFilter = new AuthenticationWebFilter(customAuthenticationManager);
-        authenticationFilter.setAuthenticationFailureHandler(customAuthenticationFailureHandler);
-        return authenticationFilter;
-    }
+    
 
-    @Bean
-    public ServerAuthenticationConverter serverAuthenticationConverter(CustomReactiveAuthenticationManager customReactiveAuthenticationManager) {
-        return exchange -> {
-            // Extract client ID from JWT claims based on your JWT structure
-            // Create an Authentication object (JwtAuthenticationToken)
-            try {
-                var token = extractTokenFromRequest(exchange);
-                Objects.requireNonNull(token, "token is null");
-                var jwt = validateAndParseToken(token);
-                var authentication = new JwtAuthenticationToken(jwt);
-                log.info("authentication context :: {}", authentication);
-                var oauth = createOAuth2AuthenticationTokenFromJwt(jwt);
-                return customReactiveAuthenticationManager.authenticate(oauth);
-            } catch (Exception e) {
-                log.error("exception authentication message :: {}", e.getMessage());
-                Collection<GrantedAuthority> anonymousAuthorities = AuthorityUtils.createAuthorityList("anonymous_user");
-                return customReactiveAuthenticationManager.authenticate(new AnonymousAuthenticationToken("anonymous-user", new Object(), anonymousAuthorities));
-            }
-        };
-    }
+    
 
-    @Bean
-    public AuthenticationWebFilter authenticationWebFilter(ServerAuthenticationConverter authenticationConverter) {
-        AuthenticationWebFilter filter = new AuthenticationWebFilter(
-                new CustomReactiveAuthenticationManager()); // Implement this manager
-        //TODO: enable setAuthenticationSuccessHandler in case it is required.
-        //filter.setAuthenticationSuccessHandler(successHandler());
-        filter.setServerAuthenticationConverter(authenticationConverter);
 
-        return filter;
-    }
 
-    @Bean
-    public CustomAuthenticationSuccessHandler successHandler() {
-        return new CustomAuthenticationSuccessHandler();
-    }
+    
 
-    @Bean
-    public CustomAuthenticationFailureHandler failureHandler() {
-        return new CustomAuthenticationFailureHandler();
-    }
+    
 
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        // Customize the authorities extraction if needed
-        // converter.setJwtGrantedAuthoritiesConverter(...);
-        return converter;
-    }
+    
 
-    @Bean
-    public ServerOAuth2AuthorizationRequestResolver authorizationRequestResolver(ReactiveClientRegistrationRepository clientRegistrationRepository) {
-        DefaultServerOAuth2AuthorizationRequestResolver authorizationRequestResolver =
-                new DefaultServerOAuth2AuthorizationRequestResolver(
-                        clientRegistrationRepository);
-        authorizationRequestResolver.setAuthorizationRequestCustomizer(
-                authorizationRequestCustomizer());
 
-        return authorizationRequestResolver;
-    }
 
     private Consumer<OAuth2AuthorizationRequest.Builder> authorizationRequestCustomizer() {
         return customizer -> customizer
