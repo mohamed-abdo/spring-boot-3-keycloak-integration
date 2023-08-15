@@ -86,16 +86,19 @@ public class SecurityBeans {
         return exchange -> {
             // Extract client ID from JWT claims based on your JWT structure
             // Create an Authentication object (JwtAuthenticationToken)
-            var token = extractTokenFromRequest(exchange);
-            if (Objects.isNull(token)) {
+            try {
+                var token = extractTokenFromRequest(exchange);
+                Objects.requireNonNull(token, "token is null");
+                var jwt = validateAndParseToken(token);
+                var authentication = new JwtAuthenticationToken(jwt);
+                log.info("authentication context :: {}", authentication);
+                var oauth = createOAuth2AuthenticationTokenFromJwt(jwt);
+                return customReactiveAuthenticationManager.authenticate(oauth);
+            } catch (Exception e) {
+                log.error("exception authentication message :: {}", e.getMessage());
                 Collection<GrantedAuthority> anonymousAuthorities = AuthorityUtils.createAuthorityList("anonymous_user");
                 return customReactiveAuthenticationManager.authenticate(new AnonymousAuthenticationToken("anonymous-user", new Object(), anonymousAuthorities));
             }
-            var jwt = validateAndParseToken(token);
-            var authentication = new JwtAuthenticationToken(jwt);
-            log.info("authentication :: {}", authentication);
-            var oauth = createOAuth2AuthenticationTokenFromJwt(jwt);
-            return customReactiveAuthenticationManager.authenticate(oauth);
         };
     }
 
@@ -103,7 +106,7 @@ public class SecurityBeans {
     public AuthenticationWebFilter authenticationWebFilter(ServerAuthenticationConverter authenticationConverter) {
         AuthenticationWebFilter filter = new AuthenticationWebFilter(
                 new CustomReactiveAuthenticationManager()); // Implement this manager
-
+        //TODO: enable setAuthenticationSuccessHandler in case it is required.
         //filter.setAuthenticationSuccessHandler(successHandler());
         filter.setServerAuthenticationConverter(authenticationConverter);
 
