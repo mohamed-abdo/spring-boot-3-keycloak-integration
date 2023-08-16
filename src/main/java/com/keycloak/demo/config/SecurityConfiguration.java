@@ -45,6 +45,8 @@ public class SecurityConfiguration {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
+                .cors().configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())
+                .and()
                 .authorizeExchange((authorize) -> authorize
                         .anyExchange().authenticated()
                 )
